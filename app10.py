@@ -46,7 +46,11 @@ def get_response(user_input):
     st.session_state.history.append({"user": user_input, "bot": answer['챗봇']})
 
 # Streamlit 인터페이스
-st.title("이력서 챗봇")
+st.title("포토폴리오 챗본")
+
+# 이미지 추가 
+st.image("추천알고리즘.png", caption="Welcome to the Restaurant Chatbot", use_column_width=True)
+
 st.write("최종 프로젝트 관하여 질문해보세요. 예) 프로젝트 주제는 무엇인가요?")
 
 user_input = st.text_input("user", "")
