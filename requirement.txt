@@ -1,0 +1,3 @@
+setence_transformers
+pandas
+streamlit
