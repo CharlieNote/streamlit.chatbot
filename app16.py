@@ -37,7 +37,8 @@ with st.container():
     with col2:
         st.header("사물 검출 결과 영상")
         result_placeholder = st.empty()
-        if "processed_video" in st.session_state and st.session_state["processed_video"] is not None:
+        # 세션에 결과 비디오가 있는 경우 결과를 표시
+        if "processed_video" in st.session_state and st.session_state["processed_video"]:
             result_placeholder.video(st.session_state["processed_video"])
         else:
             result_placeholder.markdown(
@@ -90,10 +91,8 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
     cap.release()
     out.release()
 
-    # 저장 후 대기 시간
-    time.sleep(1)
-
-    # 결과 비디오를 세션 상태에 저장 및 자동 재생
+    # 결과 비디오 파일 경로를 세션 상태에 저장
     st.session_state["processed_video"] = output_path
-    result_placeholder.video(st.session_state["processed_video"])
+    # 결과 비디오 자동 재생
+    result_placeholder.video(output_path)
     st.success("사물 검출이 완료되어 오른쪽에 표시됩니다.")
