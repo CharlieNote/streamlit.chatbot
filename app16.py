@@ -36,36 +36,27 @@ with st.container():
 
     with col2:
         st.header("사물 검출 결과 영상")
-        result_placeholder = st.empty()
-        # 세션에 결과 비디오가 있는 경우 결과를 표시
-        if "processed_video" in st.session_state and st.session_state["processed_video"]:
-            result_placeholder.video(st.session_state["processed_video"])
-        else:
-            result_placeholder.markdown(
-                """
-                <div style='width:100%; height:620px; background-color:#d3d3d3; display:flex; align-items:center; justify-content:center; border-radius:5px;'>
-                    <p style='color:#888;'>여기에 사물 검출 결과가 표시됩니다.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+        result_placeholder = st.empty()  # 비디오 출력 위치
 
 # 사물 검출 버튼 클릭 이벤트 처리
 if st.button("사물 검출 실행") and uploaded_file and model_file:
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".avi") as temp_output:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_output:
         output_path = temp_output.name
 
+    # 입력 비디오 파일 저장
     with tempfile.NamedTemporaryFile(delete=False) as temp_input:
         temp_input.write(uploaded_file.read())
         temp_input_path = temp_input.name
 
+    # 비디오 캡처 설정
     cap = cv2.VideoCapture(temp_input_path)
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # mp4 코덱 설정
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
+    # 프레임별 처리 및 출력
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -75,6 +66,7 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
         results = model(frame)
         detections = results[0].boxes if len(results) > 0 else []
 
+        # 감지된 객체들 표시
         if len(detections) > 0:
             for box in detections:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
@@ -88,11 +80,11 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
 
         out.write(frame)
 
+    # 비디오 릴리스
     cap.release()
     out.release()
 
-    # 결과 비디오 파일 경로를 세션 상태에 저장
-    st.session_state["processed_video"] = output_path
-    # 결과 비디오 자동 재생
-    result_placeholder.video(output_path)
+    # 딜레이 후 결과 비디오 자동 재생
+    time.sleep(1)
+    result_placeholder.video(output_path)  # 세션 없이 결과 비디오 바로 재생
     st.success("사물 검출이 완료되어 오른쪽에 표시됩니다.")
